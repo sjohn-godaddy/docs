@@ -6,7 +6,7 @@
 - monthly cost:     $1500/month
 - daily run time:   2hrs (etl), 24hrs (dms)
 - s3 data usage:    6 TB/month
-- private ip used:  12/day (for 2hrs)
+- private ip used:  30-50/day (for 2hrs)
 
 ---
 
