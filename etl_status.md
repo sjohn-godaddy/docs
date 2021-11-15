@@ -16,7 +16,7 @@
 ## remaining work
 
 #### dms work
-  - wait for cdc support in aurora
+  - wait for aurora restart to enable cdc support
   - re-configure dms to use cdc
   - wait for cp_solutions to fix 4096 limit
   - re-configure dms table filter
