@@ -35,8 +35,8 @@
     "messageId": "810423ea-555a-4053-aa39-32136edb3292",
     "createdDate": "2021-02-23T21:13:37.147Z",
     "channel": "webmessage",
-    "channelFrom": "ef90d2ea-f131-4c7a-9dad-b28f82403bdb",
-    "channelTo": "+18432275878",
+    "channelFrom": "ef90d2ea-f131-4c7a-9dad-b28f82403bdb",                  <---- C1 (outbound)
+    "channelTo": "+18432275878",                                            <---- C2
     "direction": "OUTBOUND",
     "deliveryState": "DELIVERED",
     "body": "Oy thats a nice pair of headphones"
@@ -145,11 +145,11 @@
     "createdDate": "2021-09-19T22:12:12.135Z",
     "traits": [
       {
-        "name": "callSubType",
+        "name": "callSubType",                                              <---- custom_attributes trait_callSubType (single level)
         "value": "inboundMissed"
       },
       {
-        "name": "callSid",
+        "name": "callSid",                                                  <---- custom_attributes trait_callSid
         "value": "CA4d48dff20b4cd8e4480263abfcb47d35"
       }
     ],
@@ -157,7 +157,51 @@
     "channelFrom": "+16145713211",
     "channelTo": "+14104985652",
     "direction": "INBOUND",
-    "deliveryState": "RECEIVED"
+    "deliveryState": "RECEIVED",
+    "media": [
+      {
+        "mimetype": "audio/x-wav",                                          <---- http header ContentType
+        "audioLengthInSeconds": 25,                                         <---- ? (custom_attribute on attachment)
+        "url": "https://media.cloud.vnm.godaddy.com/media/v1/RDsizqGc"      <---- attachment_id
+      }
+    ],
+    "body": "so that we can discuss and take necessary action"              <---- ? (transcript. empty if missed call or unable transcribe) 
   }
 }
 ```
+
+# voip message (outbound)
+``` json
+{
+  "messageThread": {
+    "messageThreadId": "3d09fda1-e85f-4441-89ae-d22a020ec975",
+    "lastMessageReadId": "e1430cf9-87ec-4f94-8677-050f93087307",
+    "lastMessageId": "e1430cf9-87ec-4f94-8677-050f93087307"
+  },
+  "message": {
+    "messageThreadId": "247ca993-fae6-4d21-820a-70cbd637ff51",
+    "messageId": "837cb023-7f4a-42a8-96b7-9d76aefdc71e",
+    "createdDate": "2021-08-21T09:16:43.978Z",
+    "traits": [
+      {
+        "name": "callSubType",
+        "value": "outbound"
+      },
+      {
+        "name": "callSid",
+        "value": "CAf071554ae414923ad34c1b743ef13388"
+      },
+      {
+        "name": "callDuration",                                             <---- custom_attributes trait_callDuration
+        "value": "7"
+      }
+    ],
+    "channel": "voip",
+    "channelFrom": "+17706705434",
+    "channelTo": "+14704551021",
+    "direction": "OUTBOUND",
+    "deliveryState": "RECEIVED",
+  }
+}
+```
+
