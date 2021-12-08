@@ -2,12 +2,39 @@
 
 ## Let's migrate on the fly
 Migrate on demand. Its simpler and we dont have to worry about deltas or syncing. Migrate the accounts, brands, channels via existing api. the volume is small, and you get immediate feedback about success/failure
-1. Call the accounts create api with `status=migrating`
-2. Call the brands/channels create apis
-3. Migrate the most recent threads/messages
-4. Call accounts api to update `status=active-recent-only`
-5. Migrate the remaining recent threads/messages
-6. Call accounts api to update `status=active`
+
+1. Before the migration every C1 in GoDaddy will get WebChat channel, and that will create a reamaze account with `status=active, migration_status=not_started`
+2. Client downloads new version of the mobile app. When app is launched by user, the first thing it does is call reamaze accounts index api. Reamaze should then call Conversation api to ask about this account. Reamaze will return migration status to the mobile app in the response. Mobile app will call a new reamaze endpoint /start-migration. Reamaze will then call Conversations /start-migration endpoint, and will also mark the account as migrating (account=active, account.migration_status=migrating). Conversations then will do the following:
+  1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
+  2. Call /migrate to migrate the most recent threads/messages
+  3. Poll /check-migration to check status
+  4. Call accounts api to update `migration_status=recent-only`
+  5. Call /migrate to migrate the remaining recent threads/messages
+  6. Poll /check-migration to check status
+  7. Call accounts api to update `migration_status=completed`
+
+Questions
+- Will reamaze remember where it left off between steps 3 and 6, or maybe step 6 overwrites all of the threads/messages
+- How to handle attachment reading failure during migration. We can skip failed attachments and move on
+- Can we redo the migration? can reamaze re-read all the data from Conversations and re-populate reamaze db again (for that account). Add a force option whenever Conversations wants to force re-migration of an account. This is useful for development/testing purposes.
+- When account create api is called (after migration), how will reamaze know whether this account needs to be migrated or not? Reamaze should call Conversation api to ask about this account. If account is not found in Conversations then its doesnt need migration.
+
+>>>>>>>> TODO TODO
+How to handle failures during migration
+1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
+     Failure here.
+3. Call /migrate to migrate the most recent threads/messages
+4. Poll /check-migration to check status
+5. Call accounts api to update `status=active-recent-only`
+6. Call /migrate to migrate the remaining recent threads/messages
+7. Poll /check-migration to check status
+8. Call accounts api to update `status=active`
+
+  - Network failure reading a specific record from dynamo. We'll want to retry x times. After that what do we do? is there a dead letter queue equivalent. we can move on with the migration, skip this message. Handle this dead letter queue items later next weekend.
+  - Can we skip threads/messages that fail to migrate?
+  - Do we need a threshold 'if x failures happen, then mark this migration as errored'
+  - At some point mark the migration as failure?
+
 
 ## Migrating thread/messages on the fly
 
@@ -18,9 +45,11 @@ This removes the need for apis (rate limiting issues go away), and also reduces 
 - Migration status can be polled by calling /accounts api. It will return status `migrating/active-recent-only/active`
 
 Todos/Questions
-  - Explore the cross account dynamodb access
-  - Will the raw dynamob data for a thread/message need to be enhanced?
-    eg: attachment urls, or telephony data
+  - Explore the cross account dynamodb access (Skip/Dennis can open the access policy)
+  - Will the raw dynamodb data for a thread/message need to be enhanced? eg: attachment urls, or telephony data
+    - Attachments are media urls within dynamodb. requires shopper jwt which reamaze doesnt have
+    - Conversations can open media service to use cert jwt, so that reamaze can access these media urls by providing cert jwt
+    - No other data in dynamodb needs to be enhanced
   - Do a POC and show how long it typically takes to do this
 
 ### Method #2: Via S3 dumps
@@ -34,9 +63,9 @@ Todos/Questions
 
 ## Handling redundant requests
 When Conversations calls /migrate api multiple times
-- If account is already active, then we ignore the subsequesnt /mgrate request
+- If account is already active, then we ignore the subsequesnt /migrate request
 - If account not-active and not-migrating, then we process the request
-
+- Also add a force option whenever Conversations wants to force re-migration of an account
 
 ## Concerns about the 'ongoing migration' approach
 There are a few reasons why we dont want to go this approach unless absolutely necessary.
