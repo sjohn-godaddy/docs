@@ -4,14 +4,20 @@
 Migrate on demand. Its simpler and we dont have to worry about deltas or syncing. Migrate the accounts, brands, channels via existing api. the volume is small, and you get immediate feedback about success/failure
 
 1. Before the migration every C1 in GoDaddy will get WebChat channel, and that will create a reamaze account with `status=active, migration_status=not_started`
-2. Client downloads new version of the mobile app. When app is launched by user, the first thing it does is call reamaze accounts index api. Reamaze should then call Conversation api to ask about this account. Reamaze will return migration status to the mobile app in the response. Mobile app will call a new reamaze endpoint /start-migration. Reamaze will then call Conversations /start-migration endpoint, and will also mark the account as migrating (account=active, account.migration_status=migrating). Conversations then will do the following:
-  1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
-  2. Call /migrate to migrate the most recent threads/messages
-  3. Poll /check-migration to check status
-  4. Call accounts api to update `migration_status=recent-only`
-  5. Call /migrate to migrate the remaining recent threads/messages
-  6. Poll /check-migration to check status
-  7. Call accounts api to update `migration_status=completed`
+2. Client downloads new version of the mobile app
+   - When app is launched by user, the first thing it does is call reamaze accounts index api. 
+   - Reamaze in turn will then call Conversation api to check if this account needs to be migrated. Reamaze will return migration status to the mobile app in the response. 
+     - This step is needed because reamaze cannot differentiate between an account that needs migration vs a new account that was never in Conversations db (and hence doesnt need migration). If migration is not needed reamaze should mark `migration_status=not_needed`
+   - Mobile app will call a new reamaze endpoint /start-migration
+   - Reamaze will then call Conversations /start-migration endpoint, and will also mark the account as migrating (account=active, account.migration_status=migrating)
+   - Conversations then will do the following:
+       1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
+       2. Call /migrate to migrate the most recent threads/messages
+       3. Poll /check-migration to check status
+       4. Call accounts api to update `migration_status=recent-only`
+       5. Call /migrate to migrate the remaining recent threads/messages
+       6. Poll /check-migration to check status
+       7. Call accounts api to update `migration_status=completed`
 
 Questions
 - Will reamaze remember where it left off between steps 3 and 6, or maybe step 6 overwrites all of the threads/messages
