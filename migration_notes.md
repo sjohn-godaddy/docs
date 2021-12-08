@@ -33,18 +33,13 @@ Todos/Questions
 
 
 ## Handling redundant requests
-If Conversations calls /migrate api multiple times
-- if account is already active, then we ignore the subsequesnt /mgrate request
-- if account not-active and not-migrating, then we process the request
+When Conversations calls /migrate api multiple times
+- If account is already active, then we ignore the subsequesnt /mgrate request
+- If account not-active and not-migrating, then we process the request
 
 
 ## Concerns about the 'ongoing migration' approach
 There are a few reasons why we dont want to go this approach unless absolutely necessary.
-- having to deal with deltas
-- do we hae to worry about deletions account/website/channel/thread/message during?
-  in reamaze deletion is cascading. if parent gets deleted, children gets deleted
-- what if the account failed to create
-  or the conversation didnt create
-  how do we tell them that somethign went wrong?
-    logging and reporting to slack can be monitored.
-    what kind of error handling does Conversations want (if we go this approach)
+- Having to deal with deltas
+- Do we have to worry about deletions account/website/channel/thread/message during? In reamaze deletion is cascading. if parent gets deleted, children gets deleted
+- What if the account failed to create. Or the conversation didnt create. How do we tell them that somethign went wrong? Logging and reporting to slack can be monitored. What kind of error handling does Conversations want (if we go this approach)
