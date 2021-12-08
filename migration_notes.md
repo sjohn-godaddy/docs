@@ -9,7 +9,7 @@ Migrate on demand. Its simpler and we dont have to worry about deltas or syncing
    - Reamaze in turn will then call Conversation api to check if this account needs to be migrated. Reamaze will return migration status to the mobile app in the response. 
      - This step is needed because reamaze cannot differentiate between an account that needs migration vs a new account that was never in Conversations db (and hence doesnt need migration). If migration is not needed reamaze should mark `migration_status=not_needed`
    - Mobile app will call a new reamaze endpoint /start-migration
-   - Reamaze will then call Conversations /start-migration endpoint, and will also mark the account as migrating (account=active, account.migration_status=migrating)
+   - Reamaze will then call Conversations /start-migration endpoint, and will also mark the account as migrating: `status=active, migration_status=migrating`
    - Conversations then will do the following:
        1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
        2. Call /migrate to migrate the most recent threads/messages
