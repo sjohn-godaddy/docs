@@ -23,7 +23,7 @@ Todos/Questions
     eg: attachment urls, or telephony data
   - Do a POC and show how long it typically takes to do this
 
-### Method #2: Via s3 dumps
+### Method #2: Via S3 dumps
   - Conversations will dump a single account's threads/messages/attachments into S3
   - Conversations will call a reamaze /migrate api and provide the S3 location
   - Reamaze /migrate api will schedule a job to do the migration
