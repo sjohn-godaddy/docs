@@ -6,18 +6,36 @@ Migrate on demand. Its simpler and we dont have to worry about deltas or syncing
 1. Before the migration every C1 in GoDaddy will get WebChat channel, and that will create a reamaze account with `status=active, migration_status=not_started`
 2. Client downloads new version of the mobile app
    - When app is launched by user, the first thing it does is call reamaze accounts index api. 
-   - Reamaze in turn will then call Conversation api to check if this account needs to be migrated. Reamaze will return migration status to the mobile app in the response. 
+   - Reamaze in turn will then call Conversation api to check if this account needs to be migrated. Reamaze will return migration_status to the mobile app in the response. 
      - This step is needed because reamaze cannot differentiate between an account that needs migration vs a new account that was never in Conversations db (and hence doesnt need migration). If migration is not needed reamaze should mark `migration_status=not_needed`
-   - Mobile app will call a new reamaze endpoint /start-migration
-   - Reamaze will then call Conversations /start-migration endpoint, and will also mark the account as migrating: `status=active, migration_status=migrating`
-   - Conversations then will do the following:
-       1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
-       2. Call /migrate to migrate the most recent threads/messages
-       3. Poll /check-migration to check status
-       4. Call accounts api to update `migration_status=recent-only`
-       5. Call /migrate to migrate the remaining recent threads/messages
-       6. Poll /check-migration to check status
-       7. Call accounts api to update `migration_status=completed`
+   - If migration is needed, Mobile app will call a new reamaze endpoint /start-migration. 
+     - Client needs to poll for something to check if migration is finished.
+     - Reamaze needs to expose the api for polling (could be accounts api itself)
+   - Reamaze /start-migration will:
+     - Mark the account as migrating: `status=active, migration_status=migrating`
+     - Drop a background job to do the migration
+   - Reamaze migration background job will:
+     - Call Conversations /get_channels_to_migrate endpoint, get the data and update itself
+     - We cannot use direct dynamodb access here because of application-level encryption in Conversations
+     - Update `migration_status=channels-only`, so that client can move to 'Inbox view' when it polls for migration status
+     - Read recent threads/messages from dynamodb and adds into reamaze
+     - Update `migration_status=recent-messages-only`, so that client can pull and show recent messages
+     - Read all threads/messages from dynamodb and adds into reamaze
+     - Update `migration_status=completed`, so that client can pull and show all messages
+
+
+
+   - Conversations /start-migration will:
+       1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion though)
+       2. -- mobile client goes into inbox view at this point --
+       3. Call /migrate to migrate the most recent threads/messages
+       4. Poll /check-migration to check status
+       5. Call accounts api to update `migration_status=recent-only`
+       6. Call /migrate to migrate the remaining recent threads/messages
+       7. Poll /check-migration to check status
+       8. Call accounts api to update `migration_status=completed`
+
+
 
 Questions
 - Will reamaze remember where it left off between steps 3 and 6, or maybe step 6 overwrites all of the threads/messages
@@ -26,9 +44,11 @@ Questions
 - When account create api is called (after migration), how will reamaze know whether this account needs to be migrated or not? Reamaze should call Conversation api to ask about this account. If account is not found in Conversations then its doesnt need migration.
 
 >>>>>>>> TODO TODO
+>>>>>>>> TODO TODO
+
 How to handle failures during migration
 1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion)
-     Failure here.
+     
 3. Call /migrate to migrate the most recent threads/messages
 4. Poll /check-migration to check status
 5. Call accounts api to update `status=active-recent-only`
@@ -40,6 +60,7 @@ How to handle failures during migration
   - Can we skip threads/messages that fail to migrate?
   - Do we need a threshold 'if x failures happen, then mark this migration as errored'
   - At some point mark the migration as failure?
+
 
 
 ## Migrating thread/messages on the fly
