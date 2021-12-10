@@ -52,7 +52,7 @@ Client downloads new version of the mobile app. This app's backend is re:amaze p
   - Reamaze /check-migration-status should return the same
   - Mobile app will retry reamaze /migrate
   - Reamaze will resume the migration starting at the recent messages step
-- failure in all message migration
+- Failure in all message migration
   - Account updated `migration_status = messages-failure`
   - Reamaze /check-migration-status should return `migration_status = SUCCESS`
   - Mobile app will assume everything is good
@@ -71,18 +71,3 @@ Client downloads new version of the mobile app. This app's backend is re:amaze p
   - Attachments are media urls within dynamodb. requires shopper jwt which reamaze doesnt have. Conversations can open media service to use cert jwt, so that reamaze can access these media urls by providing cert jwt
   - No other data in dynamodb needs to be enhanced
 - Can we do a POC on reading from dynamodb from a different aws account?
-
-
-## Handling redundant requests
-When Mobile app calls /migrate api multiple times
-- If account migration_status is already completed, then we ignore the subsequent request
-- If account migration_status is somewhere in process, then we process the request as a retry/resume request
-
-## Alternative #1: Via S3 dumps
-If we cannot read directly from dynamodb, Conversations will dump a single account's threads/messages/attachments into S3. The S3 location will be provided to re:amaze. We need to do a POC and check how long it takes to dump S3 and then read it again on the other side. 
-
-## Alternative #2: Ongoing migration
-There are a few reasons why we dont want to go this approach unless absolutely necessary.
-- Having to deal with deltas
-- Do we have to worry about deletions account/website/channel/thread/message during? In reamaze deletion is cascading. if parent gets deleted, children gets deleted
-- What if the account failed to create. Or the conversation didnt create. How do we tell them that somethign went wrong? Logging and reporting to slack can be monitored. What kind of error handling does Conversations want (if we go this approach)
