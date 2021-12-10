@@ -6,34 +6,52 @@ Migrate on demand. Its simpler and we dont have to worry about deltas or syncing
 1. Before the migration every C1 in GoDaddy will get WebChat channel, and that will create a reamaze account with `status=active, migration_status=not_started`
 2. Client downloads new version of the mobile app
    - When app is launched by user, the first thing it does is call reamaze accounts index api. 
-   - Reamaze in turn will then call Conversation api to check if this account needs to be migrated. Reamaze will return migration_status to the mobile app in the response. 
-     - This step is needed because reamaze cannot differentiate between an account that needs migration vs a new account that was never in Conversations db (and hence doesnt need migration). If migration is not needed reamaze should mark `migration_status=not_needed`
+   - Reamaze in turn will then call Conversation api to check if this account needs to be migrated. Reamaze will return migration_status to the mobile app
    - If migration is needed, Mobile app will call a new reamaze endpoint /start-migration. 
      - Client needs to poll for something to check if migration is finished.
      - Reamaze needs to expose the api for polling (could be accounts api itself)
-   - Reamaze /start-migration will:
+   - Reamaze /start-migration will drop a background job
+   - Reamaze bakground job
      - Mark the account as migrating: `status=active, migration_status=migrating`
-     - Drop a background job to do the migration
-   - Reamaze migration background job will:
-     - Call Conversations /get_channels_to_migrate endpoint, get the data and update itself
-     - We cannot use direct dynamodb access here because of application-level encryption in Conversations
-     - Update `migration_status=channels-only`, so that client can move to 'Inbox view' when it polls for migration status
+     - Call conversations /start-config-migration (synchronous)
+       - Conversations will call reamaze accounts api to verify venture/websites
+       - Conversations will call reamaze channel create/update apis (no deletion though)
+       - return back to reamaze
+     - Update `account.migration_status=config-migrated` (mobile can poll this and move to Inbox view if it has WebChat messages)
      - Read recent threads/messages from dynamodb and adds into reamaze
-     - Update `migration_status=recent-messages-only`, so that client can pull and show recent messages
+     - Update `account.migration_status=recent-messages-migrated` (mobile can poll this and move to Inbox view)
      - Read all threads/messages from dynamodb and adds into reamaze
-     - Update `migration_status=completed`, so that client can pull and show all messages
+       - Update `migration_status=completed` (mobile can poll this)
+       - or... update `internal_migration_status=full-message-failure`
+       - either case return success
+
+
+Handling failures
+- failure in mobile app connecting to reamaze
+  - sorry cant help you
+- failure in configs migration
+  - reamaze poll api should return back migration_status=config-migration-failure
+  - mobile app will call reamaze /start-migration again
+- failure in recent message migration
+  - reamaze poll api should return back migration_status=recent-message-migration-failure
+  - mobile app will call reamaze /start-migration again
+  - start after configs migration and read recent messages again
+- failure in all message migration
+  - reamaze poll api should still return success, but internally mark it as message-migration-failure
+  - mobile app will assume everything is good
+  - we will preiodically query for such accounts and fix them manually
+
+
+[todo]
+WebChat messages are not migrated because they are already there in reamaze.
+but we need to migrate the starred status of those messages
 
 
 
-   - Conversations /start-migration will:
-       1. Call the brands/channels create/update apis (some brands to create, some to update, no deletion though)
-       2. -- mobile client goes into inbox view at this point --
-       3. Call /migrate to migrate the most recent threads/messages
-       4. Poll /check-migration to check status
-       5. Call accounts api to update `migration_status=recent-only`
-       6. Call /migrate to migrate the remaining recent threads/messages
-       7. Poll /check-migration to check status
-       8. Call accounts api to update `migration_status=completed`
+
+     - This step is needed because reamaze cannot differentiate between an account that needs migration vs a new account that was never in Conversations db (and hence doesnt need migration). If migration is not needed reamaze should mark `migration_status=not_needed`
+
+       - We cannot use direct dynamodb access here because of application-level encryption in Conversations
 
 
 
