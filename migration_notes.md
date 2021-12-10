@@ -1,7 +1,9 @@
 #  Migration Discussion
 
 ## Decision: Let's migrate on the fly
-Migrate on demand. Its simpler and we dont have to worry about deltas or syncing. Migrate the accounts, brands, channels via existing api. the volume is small, and you get immediate feedback about success/failure
+Migrate on demand. Its simpler and we dont have to worry about deltas or syncing.
+- Migrate the accounts, brands, channels via existing api. the volume is small, and you get immediate feedback about success/failure
+- Migrate the conversations, messages, attachments in bulk
 
 ## Migration overview
 ![Overview](migration.png)
