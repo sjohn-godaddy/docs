@@ -66,4 +66,3 @@ Reamaze /migrate will drop a background job and return immediately. Reamaze back
 - Will the raw dynamodb data for a thread/message need to be enhanced? eg: attachment urls, or telephony data
   - Attachments are media urls within dynamodb. requires shopper jwt which reamaze doesnt have. Conversations can open media service to use cert jwt, so that reamaze can access these media urls by providing cert jwt
   - No other data in dynamodb needs to be enhanced
-- Can we do a POC on reading from dynamodb from a different aws account?
