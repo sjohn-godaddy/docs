@@ -21,7 +21,9 @@ Client downloads new version of the mobile app. This app's backend is re:amaze p
 - Mobile app calls reamaze /migrate
 - Mobile app polls reamaze /check-migration-status periodically
   - When `migration status = channels-migrated`
-    - C1 is taken to Inbox View. Inbox will be empty at the moment (unless they had web chat messages)
+    - Mobile app calls /accounts to get everything
+    - C1 is taken to Inbox View
+    - Inbox will be empty, or contain web chat messages from reamaze
   - When `migration status = recent-messages-migrated`
     - Mobile app calls /accounts to get everything
     - Inbox is reloaded
