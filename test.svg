@@ -17,7 +17,7 @@
             }
             </style>
             <h1>HELLO WORLD!</h1>
-            <image src="reamaze-job.png"/>
+            <image xlink:href="file://reamaze-job.png"/>
         </div>
     </foreignObject>
 </svg>
