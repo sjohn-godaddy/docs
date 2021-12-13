@@ -33,17 +33,9 @@ Client downloads new version of the mobile app. This app's backend is re:amaze p
     - Inbox is reloaded
 
 ## What happens within reamaze /migrate api
-- Reamaze /migrate will drop a background job and return immediately
-- Reamaze bakground job
-  - Update `migration_status = migrating`
-  - Call conversations /configs-migration (synchronously)
-    - Conversations returns channels. This data is application-encrypted and cannot be read directly by reamaze
-    - Create/Update channels into reamaze
-  - Update `migration_status = channels-migrated`
-  - Read recent threads/messages from dynamodb and adds into reamaze
-  - Update `migration_status = recent-messages-migrated`
-  - Read all threads/messages from dynamodb and adds into reamaze
-  - Update `migration_status = completed`
+Reamaze /migrate will drop a background job and return immediately. Reamaze background job will do the brunt of the work. Note that the channel data in Conversations is application-encrypted and cannot be read directly by reamaze.
+![Background Job](reamaze-job.png)
+
 
 ## Handling failures
 - Failure in channels migration
