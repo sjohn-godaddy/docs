@@ -24,3 +24,6 @@
 ### Interesting
 - [How does sentry group errors](https://makandracards.com/makandra/484983-how-does-sentry-group-exceptions)
 - [Fix entries that are not grouped](https://docs.sentry.io/product/sentry-basics/grouping-and-fingerprints/)
+- Use parameterized logging
+  ![image](https://user-images.githubusercontent.com/89797935/148114938-d0d2a66e-ba20-4241-be3e-35d49963b1c6.png)
+
