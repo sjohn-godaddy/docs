@@ -20,3 +20,6 @@
 - Explore sentry alternatives
   - We can use Elastic logs, but re:amaze logging is not logging all errors to elastic. This can be fixed. [Here's an example](https://github.com/gdcorp-enm/reamaze/blob/main/app/controllers/api/v1/base_controller.rb#L15) where we log to sentry, but not to the logs. 
   - We can explore using Elastic APM agent for error tracking
+
+### Interesting
+- [How does sentry group errors](https://makandracards.com/makandra/484983-how-does-sentry-group-exceptions)
