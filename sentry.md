@@ -2,8 +2,8 @@
 - We run integration tests every 3 minutes. If we get 2 test failures within 10 minutes then an alert goes out through pagerduty.
 - We also have cloudewatch alarms set up for our SQS dead letter queues, eks clusters, cpu utilization
 - We send all error-level logs to cloudwatch via fluentd with SQS plugin.
-  - we can then create metrics in cloudwatch using a custom lambda
-  - an alarm that will fire if there are two many error logs within a given amount of time
+  - We can then create metrics in cloudwatch using a custom lambda
+  - An alarm that will fire if there are two many error logs within a given amount of time
 - Once we get an alarm, and we have to investigate an application/service exception, all logs are in kibana for us
 - [Slack discussion](https://godaddy.slack.com/archives/C02C6HHK8ES/p1641245367424400)
 
