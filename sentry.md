@@ -23,3 +23,4 @@
 
 ### Interesting
 - [How does sentry group errors](https://makandracards.com/makandra/484983-how-does-sentry-group-exceptions)
+- [Fix entries that are not grouped](https://docs.sentry.io/product/sentry-basics/grouping-and-fingerprints/)
