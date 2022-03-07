@@ -15,6 +15,12 @@ The default vm setup scripts sets the local domain to `dev-reamaze.com`. Works g
 ### Edit site-cookbooks/lantirn-dev/recipes/web.rb (reamaze-bootstrap repo)
 ![image](https://user-images.githubusercontent.com/89797935/149370088-0267f1cb-f11c-4267-a5cd-9f54d4b5c362.png)
 
+You might need to adjust the crt/key locations like so:
+```
+cookbook_file "/etc/ssl/certs/localhost.crt"
+cookbook_file "/etc/ssl/private/localhost.key"
+```
+
 ### Generate ssl certs for local-reamaze
 ``` bssh
 brew install mkcert
